@@ -1,0 +1,14 @@
+[project]
+name = "imfind"
+version = "0.0.1"
+authors = [
+    { name="Ramya Kottapalli", email="rskottap@gmail.com" },
+]
+description = "AI image finder."
+dependencies = [
+    "mmry",
+]
+
+[project.urls]
+source = "https://github.com/rskottap/imfind"
+download = "https://pypi.org/project/imfind/#files"
