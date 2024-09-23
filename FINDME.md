@@ -1,6 +1,8 @@
-# ImFind
+# ImFind 🖼️ 
 
 Remember what an image, pic or screenshot looks like but can't for the life of you remember where you put it? Or what you named it? Or there's just too many damn screenshots to go through all of them?
+
+![Comic](include/imfind-comic.png) 
 
 Been there. Too many times.
 
