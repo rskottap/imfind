@@ -1,12 +1,17 @@
-# ImFind 🖼️ 
+## ImFind 🖼️ 
 
-Remember what an image, pic or screenshot looks like but can't for the life of you remember where you put it? Or what you named it? Or there's just too many damn screenshots to go through all of them?
+Remember what an image, pic or screenshot looks like but can't for the life of you remember where you put it? 
 
-![Comic](include/imfind-comic.png) 
+Or what you named it? 
+
+Or there's just too many damn screenshots to go through all of them? 
+
+<img src="include/imfind-comic.png" alt="Comic" width="60%"/> 
 
 Been there. Too many times.
 
 So here's a simple tool to help with that.
+
 
 ---
 
