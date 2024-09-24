@@ -15,4 +15,4 @@ source = "https://github.com/rskottap/imfind"
 download = "https://pypi.org/project/imfind/#files"
 
 [project.scripts]
-think = "imfind.bin.imfind:main"
+imfind = "imfind.bin.imfind:main"

@@ -42,36 +42,19 @@ def main(argv=None):
     thres = args.threshold
     final_prompt = default_prompt + (args.prompt or '').strip()
     include_hidden = bool(args.include_hidden)
-    
-    d = {"description": description, "directory": directory, "im_types": im_types, "n": thres, "final_prompt": final_prompt, "include_hidden": include_hidden}
 
-    print("Here are the final arguments:")
-    print(json.dumps(d, indent=4))
-    print("-"*42)
-
+    ###---------------------------------------------###   
     #### Find all image files in given directory
     # Do not use any special shell syntax like \(\) or ! to allow more cross-platform compatability (sorry Windows!)
     
     # find /home/ramya -type d -iname ".*" -prune -iname "__*" -prune -type f -iname "*.png" -o -iname "*.jpg" | wc -l
     #TODO: Fix to work without shell=True
 
-   # find_command = ['find', directory]
-
-   # if not include_hidden:
-   #     base_find_command += ['-type', 'd', '-iname', '".*"', '-prune', '-iname', '"__*"', '-prune']
-   # 
-   # base_find_command += ['-type', 'f']
-
-   # for t in file_types:
-   #     base_find_command = base_find_command + ['-iname', f'"*.{t}"', '-o']
-   # base_find_command.pop()
-
-   # print(" ".join(base_find_command))
     exclude_hidden_command = ' ! -path "*/.*" ! -path "*/__*" '
-    find_command = f"find {directory} -type f {'-o'.join(['-iname "*.{t}"' for t in file_types])}" + (exclude_hidden_command if not include_hidden else '')
+    find_command = f'find {directory} -type f \\( {' -o '.join([f'-iname "*.{t}"' for t in file_types])} \\)' + (exclude_hidden_command if not include_hidden else '')
+    
     output = subprocess.run(find_command, shell=True, capture_output=True, text=True)
     
-    __import__("IPython").embed()    
     print(output.stdout)
     
 if __name__ == '__main__':
