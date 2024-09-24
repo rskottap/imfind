@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-__all__ = [
+__all__ = ['test_method',
 ]
 
-import mmry
+import os
+
+def test_method():
+    return "this is a test method"

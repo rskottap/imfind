@@ -6,9 +6,13 @@ authors = [
 ]
 description = "AI image finder."
 dependencies = [
+    "pytest",
     "mmry",
 ]
 
 [project.urls]
 source = "https://github.com/rskottap/imfind"
 download = "https://pypi.org/project/imfind/#files"
+
+[project.scripts]
+think = "imfind.bin.imfind:main"
