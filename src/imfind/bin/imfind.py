@@ -4,9 +4,7 @@ __all__ = ['main']
 
 import os
 import sys
-import subprocess
 import argparse
-import json
 from .config import default_prompt, file_types
 
 def main(argv=None):
@@ -43,19 +41,6 @@ def main(argv=None):
     final_prompt = default_prompt + (args.prompt or '').strip()
     include_hidden = bool(args.include_hidden)
 
-    ###---------------------------------------------###   
-    #### Find all image files in given directory
-    # Do not use any special shell syntax like \(\) or ! to allow more cross-platform compatability (sorry Windows!)
-    
-    # find /home/ramya -type d -iname ".*" -prune -iname "__*" -prune -type f -iname "*.png" -o -iname "*.jpg" | wc -l
-    #TODO: Fix to work without shell=True
-
-    exclude_hidden_command = ' ! -path "*/.*" ! -path "*/__*" '
-    find_command = f'find {directory} -type f \\( {' -o '.join([f'-iname "*.{t}"' for t in file_types])} \\)' + (exclude_hidden_command if not include_hidden else '')
-    
-    output = subprocess.run(find_command, shell=True, capture_output=True, text=True)
-    
-    print(output.stdout)
     
 if __name__ == '__main__':
     main(sys.argv[1:])

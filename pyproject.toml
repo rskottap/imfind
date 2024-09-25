@@ -4,10 +4,11 @@ version = "0.0.1"
 authors = [
     { name="Ramya Kottapalli", email="rskottap@gmail.com" },
 ]
-description = "AI image finder."
+description = "Local AI image finder."
 dependencies = [
     "pytest",
     "mmry",
+    "embd",
 ]
 
 [project.urls]
