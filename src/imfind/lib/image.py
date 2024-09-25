@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+### Adapted from notarealdeveloper/kern repository 
+### https://github.com/notarealdeveloper/kern/blob/master/src/kern/image/lib/image.py 
+
 __all__ = [
     'image_to_text',
 ]
@@ -56,4 +59,3 @@ def load_model_image_to_text():
     return model
 
 
-to_text = image_to_text
