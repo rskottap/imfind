@@ -2,7 +2,7 @@
 
 ### Set of helper functions to generate descriptions of images, embed and cache them. Embed user description and similarity with image embedding caches.
 
-__all__=['find_all_image_paths']
+__all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search']
 
 
 from __future__ import annotations
@@ -40,6 +40,10 @@ def describe_images_and_cache(images, prompt) -> dict[str]:
 
     # maps from image abs paths to their descriptions
     descriptions = defaultdict(str) 
+    
+    for img_path in images:
+        descriptions[img_path] = image_and_text_to_text(img_path, prompt)
+
     return descriptions
 
 
