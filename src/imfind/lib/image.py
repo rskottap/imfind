@@ -37,9 +37,11 @@ def image_to_text_nocache(bytes):
     
     encoding = processor(image, return_tensors="pt")
 
-    outputs = model.generate(**encoding, max_new_tokens=1024)
-    return processor.decode(outputs[0], skip_special_tokens=True)
-   
+    generate_ids = model.generate(**encoding, max_new_tokens=1024)
+    output =  processor.decode(generate_ids[0], skip_special_tokens=True)
+    return output
+
+
 @lru_cache(maxsize=1)
 def load_model_image_to_text():
     from transformers import BlipProcessor, BlipForConditionalGeneration

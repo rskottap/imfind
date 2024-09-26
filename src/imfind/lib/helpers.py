@@ -42,8 +42,8 @@ def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
     descriptions = defaultdict(str) 
     for img_path in images:
         try:
-           # descriptions[img_path] = image_and_text_to_text(img_path, prompt)   
-            descriptions[img_path] = image_to_text(img_path)
+           # descriptions[img_path] = image_and_text_to_text(img_path, prompt)
+           descriptions[img_path] = image_to_text(img_path)
               
         except Exception as e:
             descriptions[img_path] = os.path.basename(img_path)

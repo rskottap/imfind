@@ -33,18 +33,21 @@ def image_and_text_to_text_nocache(image_bytes, text):
     file = io.BytesIO(image_bytes)
     image = PIL.Image.open(file)
 
+    template = f"USER:  \n{text}\nASSISTANT:\n"
     processor, model = load_model_image_and_text_to_text()
-    encoding = processor(image, text, return_tensors="pt")
-
-    outputs = model(**encoding)
-    logits = outputs.logits
-    idx = logits.argmax(-1).item()
-    return model.config.id2label[idx]
+    encoding = processor(image, template.format(text), return_tensors="pt")
+ 
+    import time
+    s = time.time()
+    generate_ids = model.generate(**encoding, max_new_tokens=1024)
+    output = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+    e = time.time()
+    return output
 
 @lru_cache(maxsize=1)
 def load_model_image_and_text_to_text():
-    from transformers import ViltProcessor, ViltForQuestionAnswering
-    name = "dandelin/vilt-b32-finetuned-vqa"
-    processor = ViltProcessor.from_pretrained(name)
-    model = ViltForQuestionAnswering.from_pretrained(name)
+    from transformers import AutoProcessor, LlavaForConditionalGeneration
+    name = "llava-hf/llava-1.5-7b-hf"
+    processor = AutoProcessor.from_pretrained(name)
+    model = LlavaForConditionalGeneration.from_pretrained(name)
     return (processor, model)
