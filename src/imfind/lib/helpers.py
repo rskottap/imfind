@@ -34,6 +34,7 @@ def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
         Note: in image_and_text_to_text the bytes cached include both the image and text bytes, so if prompt is unchanged then cache can be reused.
     """
     
+    import os
     from imfind import image_and_text_to_text, image_to_text
     from collections import defaultdict
 
@@ -45,8 +46,8 @@ def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
             descriptions[img_path] = image_to_text(img_path)
               
         except Exception as e:
-            descriptions[img_path] = img_path
-            print(f"Could not process image {img_path}")
+            descriptions[img_path] = os.path.basename(img_path)
+            print(f"Could not describe image '{img_path}'. Using file name for description instead.")
             print(e)
 
     return descriptions
