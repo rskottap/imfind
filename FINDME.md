@@ -30,6 +30,8 @@ TODO: Make demo video
 
 ### How it works
 
+Using current SOTA models like [FlagEmbedding](https://github.com/FlagOpen/FlagEmbedding) for embedding text and [LLaVa](https://huggingface.co/docs/transformers/main/en/model_doc/llava#transformers.LlavaLlamaForCausalLM) and [Blip Image Captioning](https://huggingface.co/Salesforce/blip-image-captioning-large) for generating detailed image descriptions. 
+
 Given a description of an image you want to find, this library: 
 
 
@@ -42,14 +44,7 @@ Given a description of an image you want to find, this library:
 3. Finds the most similar images based on similarity between the user description and the generated image description embeddings (nothing fancy, just your simple dot products). 
 
 ---
-
-#### Models used 
-
-- Embedding model:
-- image-to-text model:
-
----
-#### Notes
+### Notes
 
 - Be as descriptive and detailed as you can when providing a description of the image you want to search for.
 
