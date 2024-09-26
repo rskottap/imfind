@@ -36,11 +36,17 @@ def main(argv=None):
         print("Make sure $HOME is set or provide an existing directory to search within.")
         raise e
     
-    im_types = list(set(file_types + (args.types or [])))
+    file_types = list(set(file_types + (args.types or [])))
     thres = args.threshold
     final_prompt = default_prompt + (args.prompt or '').strip()
     include_hidden = bool(args.include_hidden)
 
-    
+    # do the image search
+    from imfind import image_search
+
+    top = image_search(user_img_desc=description, gen_desc_prompt=final_prompt, 
+                       directory=directory, file_types=file_types, include_hidden=include_hidden)
+    print('\n'.join(top))    
+
 if __name__ == '__main__':
     main(sys.argv[1:])
