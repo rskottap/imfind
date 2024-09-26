@@ -48,4 +48,19 @@ Given a description of an image you want to find, this library:
 - Embedding model:
 - image-to-text model:
 
+---
+#### Notes
+
+- Be as descriptive and detailed as you can when providing a description of the image you want to search for.
+
+- The first time you run the command on a new directory it will take some time to download the models, generate the descriptions of all the images and embed and cache them. Any subsequent runs should be quick thanks to the awesome cacheing implementation in [embd](https://github.com/notarealdeveloper/embd) using [mmry](https://github.com/notarealdeveloper/mmry). 
+
+- If you want to clear the cache of all the text and image embeddings (for re-runs, new models, debugging etc.,) simply do `rm -rf ~/.cache/mmry`.
+ 
+- If you remember part of what you named the file, or some other unique file name identifier, don't forget your simple (but awesome) unix tools like `locate`. 
+
+```
+locate comic
+> include/imfind-comic.png
+```
 
