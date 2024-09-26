@@ -31,31 +31,20 @@ def image_to_text_nocache(bytes):
 
     import PIL.Image
     file = io.BytesIO(bytes)
-    image = PIL.Image.open(file)
+    image = PIL.Image.open(file).convert('RGB')
 
-    model = load_model_image_to_text()
+    processor, model = load_model_image_to_text()
+    
+    encoding = processor(image, return_tensors="pt")
 
-    results = model(image)
-    outputs = []
-    for result in results:
-        output = result['generated_text'].strip()
-        outputs.append(output)
-
-    if isinstance(file, (list, tuple)):
-        return outputs
-    elif len(outputs) == 1:
-        return outputs[0]
-    else:
-        raise TypeError(file)
-
-
+    outputs = model.generate(**encoding, max_new_tokens=1024)
+    return processor.decode(outputs[0], skip_special_tokens=True)
+   
 @lru_cache(maxsize=1)
 def load_model_image_to_text():
-    from transformers import pipeline
-    model = pipeline(
-        "image-to-text",
-        model="nlpconnect/vit-gpt2-image-captioning"
-    )
-    return model
-
-
+    from transformers import BlipProcessor, BlipForConditionalGeneration
+    name = "Salesforce/blip-image-captioning-large"
+    processor = BlipProcessor.from_pretrained(name)
+    model = BlipForConditionalGeneration.from_pretrained(name)
+    
+    return (processor, model)
