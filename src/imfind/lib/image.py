@@ -8,6 +8,7 @@ __all__ = [
 ]
 
 import io
+import os
 from functools import lru_cache
 
 
@@ -19,7 +20,7 @@ def image_to_text(image):
     bytes = assure.bytes(image)
 
     cache = Cache('image_to_text')
-    if cache.have_blob(bytes):
+    if eval(os.environ.get("USE_MMRY_CACHE")) and cache.have_blob(bytes):
         return cache.load_blob(bytes).decode()
 
     text = image_to_text_nocache(bytes)

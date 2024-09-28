@@ -17,6 +17,7 @@ def main(argv=None):
     parser.add_argument('-n', '--threshold', type=int, default=10, help="Top n results to output. Defaults to top 10. Use -1 to list all images sorted by relevance.")
     parser.add_argument('-p', '--prompt', type=str, help="Additional user prompt that gets appended to default prompt. Used to generate description of images.")
     parser.add_argument('-t', '--types', type=str, nargs='*', default=config.file_types, help=f"Additional image types to search. By default searches for images with  extensions {config.file_types}")
+    parser.add_argument('--no-cache', action='store_true', help="Do not read from existing cache. Overwrites cache with new model generations. (Internally sets and uses USE_MMRY_CACHE environment variable).")
     parser.add_argument('--include-hidden', action='store_true', help="Include hidden directories like ones starting with '.' or '__'. For example, within .cache or __pycache__ etc., Excludes these by default.")
     args = parser.parse_args(argv)
     
@@ -42,6 +43,8 @@ def main(argv=None):
 
     thres = args.threshold
     final_prompt = config.default_prompt + (args.prompt or '').strip()
+
+    os.environ["USE_MMRY_CACHE"] = "False" if args.no_cache else "True"
     include_hidden = bool(args.include_hidden)
 
     # do the image search
@@ -49,7 +52,10 @@ def main(argv=None):
 
     top = image_search(user_img_desc=description, gen_desc_prompt=final_prompt, 
                        directory=directory, file_types=file_types, include_hidden=include_hidden)
-    print('\n'.join(top))    
+    print('\n'.join(top))
+
+    # delete variable
+    __ = os.environ.pop("USE_MMRY_CACHE")
 
 if __name__ == '__main__':
     main(sys.argv[1:])
