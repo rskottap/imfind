@@ -20,7 +20,7 @@ def find_all_image_paths(directory: str, file_types: list[str], include_hidden=F
     
     exclude_hidden_command = ' ! -path "*/.*" ! -path "*/__*" '
 
-    find_command = f'find "{directory}" -type f \\( {' -o '.join([f'-iname "*.{t}"' for t in file_types])} \\)' + (exclude_hidden_command if not include_hidden else '')
+    find_command = f'find -L "{directory}" -type f \\( {' -o '.join([f'-iname "*.{t}"' for t in file_types])} \\)' + (exclude_hidden_command if not include_hidden else '')
     
     output = subprocess.run(find_command, shell=True, capture_output=True, text=True)
     return output.stdout.splitlines()
