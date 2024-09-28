@@ -36,7 +36,10 @@ def main(argv=None):
         print("Make sure $HOME is set or provide an existing directory to search within.")
         raise e
     
-    file_types = list(set(config.file_types + (args.types or [])))
+    file_types = config.file_types + (args.types or [])
+    file_types += [e.capitalize() for e in file_types]
+    file_types = list(set(file_types))
+
     thres = args.threshold
     final_prompt = config.default_prompt + (args.prompt or '').strip()
     include_hidden = bool(args.include_hidden)

@@ -9,6 +9,7 @@ dependencies = [
     "pytest",
     "transformers",
     "Pillow",
+    "pillow-heif",
     "assure",
     "mmry",
     "embd",

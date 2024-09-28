@@ -30,6 +30,9 @@ def image_to_text(image):
 def image_to_text_nocache(bytes):
 
     import PIL.Image
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+
     file = io.BytesIO(bytes)
     image = PIL.Image.open(file).convert('RGB')
 
@@ -37,7 +40,7 @@ def image_to_text_nocache(bytes):
     
     encoding = processor(image, return_tensors="pt")
 
-    generate_ids = model.generate(**encoding, max_new_tokens=1024)
+    generate_ids = model.generate(**encoding, max_new_tokens=512)
     output =  processor.decode(generate_ids[0], skip_special_tokens=True)
     return output
 

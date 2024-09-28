@@ -30,6 +30,9 @@ def image_and_text_to_text(image, text):
 def image_and_text_to_text_nocache(image_bytes, text):
 
     import PIL.Image
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+
     file = io.BytesIO(image_bytes)
     image = PIL.Image.open(file)
 

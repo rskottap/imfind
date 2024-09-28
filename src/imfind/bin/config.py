@@ -7,6 +7,6 @@ If there is any text in the image, include that as well.
 Besides a general description, include any details that might help uniquely identify the image.
 """
 
-file_types = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff']
+file_types = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'heic']
 
 
