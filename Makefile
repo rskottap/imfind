@@ -1,32 +1,34 @@
 PKG = imfind
+PYTHON = python3
+PIP = pip3
 
 build:
-	pip install build
-	python -m build
+	$(PIP) install build
+	$(PYTHON) -m build
 
 install: build
-	pip install dist/*.tar.gz
+	$(PIP) install dist/*.tar.gz
 
 develop:
-	pip install -e .
+	$(PIP) install -e .
 
 check:
 	pytest -v tests
 
 uninstall:
-	pip uninstall $(PKG)
+	$(PIP) uninstall $(PKG)
 
 clean:
 	rm -rvf dist/ build/ src/*.egg-info
 
 push-test:
-	python -m twine upload --repository testpypi dist/*
+	$(PYTHON) -m twine upload --repository testpypi dist/*
 
 pull-test:
-	pip install -i https://test.pypi.org/simple/ $(PKG)
+	$(PIP) install -i https://test.pypi.org/simple/ $(PKG)
 
 push-prod:
-	python -m twine upload dist/*
+	$(PYTHON) -m twine upload dist/*
 
 pull-prod:
-	pip install $(PKG)
+	$(PIP) install $(PKG)
