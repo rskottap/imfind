@@ -35,15 +35,22 @@ def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
     """
     
     import os
+    import torch
     from imfind import image_and_text_to_text, image_to_text
     from collections import defaultdict
 
     # maps from image abs paths to their descriptions
-    descriptions = defaultdict(str) 
+    descriptions = defaultdict(str)
+
+    # if gpu is available, only then use the bigger LLaVa model. By default, use smaller BLIP model
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     for img_path in images:
         try:
-           # descriptions[img_path] = image_and_text_to_text(img_path, prompt)
-           descriptions[img_path] = image_to_text(img_path)
+            if device != 'cpu':
+                descriptions[img_path] = image_and_text_to_text(img_path, prompt)
+            else:
+                descriptions[img_path] = image_to_text(img_path)
               
         except Exception as e:
             descriptions[img_path] = os.path.basename(img_path)

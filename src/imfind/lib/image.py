@@ -10,7 +10,9 @@ __all__ = [
 import io
 import os
 from functools import lru_cache
+import torch
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def image_to_text(image):
 
@@ -20,7 +22,8 @@ def image_to_text(image):
     bytes = assure.bytes(image)
 
     cache = Cache('image_to_text')
-    if eval(os.environ.get("USE_MMRY_CACHE")) and cache.have_blob(bytes):
+    use_cache = os.environ.get("USE_MMRY_CACHE") # if not set, by default is True, so uses cache
+    if eval(use_cache if use_cache else "True") and cache.have_blob(bytes):
         return cache.load_blob(bytes).decode()
 
     text = image_to_text_nocache(bytes)
@@ -39,7 +42,7 @@ def image_to_text_nocache(bytes):
 
     processor, model = load_model_image_to_text()
     
-    encoding = processor(image, return_tensors="pt")
+    encoding = processor(image, return_tensors="pt").to(device)
 
     generate_ids = model.generate(**encoding, max_new_tokens=512)
     output =  processor.decode(generate_ids[0], skip_special_tokens=True)
@@ -51,6 +54,5 @@ def load_model_image_to_text():
     from transformers import BlipProcessor, BlipForConditionalGeneration
     name = "Salesforce/blip-image-captioning-large"
     processor = BlipProcessor.from_pretrained(name)
-    model = BlipForConditionalGeneration.from_pretrained(name)
-    
+    model = BlipForConditionalGeneration.from_pretrained(name).to(device)
     return (processor, model)
