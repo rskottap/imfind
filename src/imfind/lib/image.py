@@ -22,8 +22,8 @@ def image_to_text(image):
     bytes = assure.bytes(image)
 
     cache = Cache('image_to_text')
-    use_cache = os.environ.get("USE_MMRY_CACHE") # if not set, by default is True, so uses cache
-    if eval(use_cache if use_cache else "True") and cache.have_blob(bytes):
+    use_cache = os.environ.get("USE_MMRY_CACHE") # is None if not set, then by default use cache. If set, needs to be either "True" or "False"
+    if eval(use_cache or "True") and cache.have_blob(bytes):
         return cache.load_blob(bytes).decode()
 
     text = image_to_text_nocache(bytes)
@@ -44,7 +44,7 @@ def image_to_text_nocache(bytes):
     
     encoding = processor(image, return_tensors="pt").to(device)
 
-    generate_ids = model.generate(**encoding, max_new_tokens=512)
+    generate_ids = model.generate(**encoding, max_new_tokens=1024)
     output =  processor.decode(generate_ids[0], skip_special_tokens=True)
     return output
 

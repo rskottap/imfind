@@ -25,7 +25,7 @@ def image_and_text_to_text(image, text):
 
     cache = Cache('image_and_text_to_text')
     use_cache = os.environ.get("USE_MMRY_CACHE") # if not set, by default is True, so uses the cache
-    if eval(use_cache if use_cache else "True") and cache.have_blob(bytes):
+    if eval(use_cache or "True") and cache.have_blob(bytes):
         return cache.load_blob(bytes).decode()
 
     text = image_and_text_to_text_nocache(image_bytes, text)
