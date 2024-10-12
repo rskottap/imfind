@@ -4,29 +4,31 @@ from __future__ import annotations
 
 __all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search']
 
+from pathlib import Path
 
-def find_all_image_paths(directory: str, file_types: list[str], include_hidden=False) -> list[str]:    
+def find_all_image_paths(directory: Path, file_types: list[str], include_hidden=False) -> list[Path]:
     """
-    Find all image files in given directory. By default excludes any hidden or cache directories, ones starting with '.' and '__' (for ex, .cache, .config, __pycache__ etc.,)
-    
-    TODO: Fix to work without shell=True
-    
-    Do not use any special shell syntax like \(\) or ! to allow more cross-platform compatability (sorry Windows!)
-        
-    find /home/ramya -type d -iname ".*" -prune -iname "__*" -prune -type f -iname "*.png" -o -iname "*.jpg" | wc -l
+    Find all image files in the given directory. By default, excludes any hidden directories,
+    ones starting with '.' and '__', and their contents.
     """
-        
-    import subprocess
-    
-    exclude_hidden_command = ' ! -path "*/.*" ! -path "*/__*" '
 
-    find_command = f'find -L "{directory}" -type f \\( {' -o '.join([f'-iname "*.{t}"' for t in file_types])} \\)' + (exclude_hidden_command if not include_hidden else '')
+    def should_include(file: Path) -> bool:
+        # Skip hidden directories
+        if not include_hidden:
+            for parent in file.parents:
+                if parent.name.startswith('.') or parent.name.startswith('__'):
+                    return False
+        return True
+
+    # Find all image files
+    image_paths = []
+    for file_type in file_types:
+        image_paths.extend([file for file in directory.rglob(f'*.{file_type}') if should_include(file)])
     
-    output = subprocess.run(find_command, shell=True, capture_output=True, text=True)
-    return output.stdout.splitlines()
+    return image_paths
     
 
-def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
+def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
     """
         images: List of paths to image files
         prompt: prompt used to generate descriptions
@@ -48,10 +50,11 @@ def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
     use_llava_success = True
 
     for img_path in images:
+        k = str(img_path)
         try:
             if device != 'cpu' and use_llava_success:
                 try:
-                    descriptions[img_path] = image_and_text_to_text(img_path, prompt)
+                    descriptions[k] = image_and_text_to_text(img_path, prompt)
                 except Exception as e:
                     msg = textwrap.dedent(f"""\
                     Torch detected gpu, tried to use LLaVa1.5 for image-to-text but inference failed due to the following error:
@@ -61,19 +64,19 @@ def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
                     print(msg)
 
                     use_llava_success = False
-                    descriptions[img_path] = image_to_text(img_path)
+                    descriptions[k] = image_to_text(img_path)
             else:
-                descriptions[img_path] = image_to_text(img_path)
+                descriptions[k] = image_to_text(img_path)
               
         except Exception as e:
-            descriptions[img_path] = os.path.basename(img_path)
-            print(f"Could not describe image '{img_path}'. Using file name for description instead.")
+            descriptions[k] = img_path.name
+            print(f"Could not describe image '{k}'. Using file name for description instead.")
             print(e)
 
     return descriptions
 
 
-def image_search(user_img_desc: str, gen_desc_prompt: str, directory: str, file_types: list[str], include_hidden=False, embed_size='large') -> list[str]:
+def image_search(user_img_desc: str, gen_desc_prompt: str, directory: Path, file_types: list[str], include_hidden=False, embed_size='large') -> list[str]:
 
     from embd import Space, EmbedFlag, List
     

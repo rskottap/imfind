@@ -5,6 +5,7 @@ __all__ = ['main']
 import os
 import sys
 import argparse
+from pathlib import Path
 from . import config
 
 def parse_args(argv):
@@ -39,13 +40,13 @@ def main(argv=None):
     directory = ''
     try:
         if not args.directory:
-            directory = os.environ["HOME"] # make home directory 
+            directory = Path(os.environ["HOME"]).expanduser().resolve() # make it home directory 
         else:
-            directory = os.path.expanduser(args.directory.strip())
-            if not os.path.exists(directory):
+            directory = Path(args.directory.strip()).expanduser().resolve()
+            if not directory.exists():
                 raise FileNotFoundError(f"{directory}: No such file or folder exists.")
     except Exception as e:
-        print("Make sure $HOME is set or provide an existing directory to search within.")
+        print("Make sure $HOME is set (export HOME='/home/<user>') or provide an existing directory to search within.")
         raise e
     
     file_types = config.file_types + (args.types or [])
