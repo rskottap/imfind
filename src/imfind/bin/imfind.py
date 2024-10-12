@@ -6,7 +6,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
-from . import config
+from imfind import etc
 
 def parse_args(argv):
 
@@ -21,13 +21,14 @@ def parse_args(argv):
     parser.add_argument('-d', '--directory', type=str, help="Directory to search in. Defaults to $HOME.")
     parser.add_argument('-n', '--threshold', type=check_nonneg, default=0, help="Top n (>=1) results to output. By default lists all images found (like the find command) sorted from most relevant/similar to least.")
     parser.add_argument('-p', '--prompt', type=str, help="Additional user prompt that gets appended to default prompt. Used to generate description of images.")
-    parser.add_argument('-t', '--types', type=str, nargs='*', default=config.file_types, help=f"Additional image types to search. By default searches for images with  extensions {config.file_types}")
+    parser.add_argument('-t', '--types', type=str, nargs='*', default=etc.file_types, help=f"Additional image types to search. By default searches for images with  extensions {etc.file_types}")
     parser.add_argument('--no-cache', action='store_true', help="Do not read from existing cache. Overwrites cache with new model generations. (Internally sets and uses USE_MMRY_CACHE environment variable).")
     parser.add_argument('--include-hidden', action='store_true', help="Include hidden directories like ones starting with '.' or '__'. For example, within .cache or __pycache__ etc., Excludes these by default.")
     args = parser.parse_args(argv)
     return args
 
 def main(argv=None):
+
     if argv is None:
         argv = sys.argv[1:]
 
@@ -49,12 +50,12 @@ def main(argv=None):
         print("Make sure $HOME is set (export HOME='/home/<user>') or provide an existing directory to search within.")
         raise e
     
-    file_types = config.file_types + (args.types or [])
+    file_types = etc.file_types + (args.types or [])
     file_types += [e.capitalize() for e in file_types]
     file_types = list(set(file_types))
 
     thres = args.threshold
-    final_prompt = config.default_prompt + (args.prompt or '').strip()
+    final_prompt = etc.default_prompt + (args.prompt or '').strip()
 
     os.environ["USE_MMRY_CACHE"] = "False" if args.no_cache else "True"
     include_hidden = bool(args.include_hidden)
