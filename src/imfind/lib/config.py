@@ -9,4 +9,6 @@ Besides a general description, include any details that might help uniquely iden
 
 file_types = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'heic']
 
+# See here for full available list https://www.jaided.ai/easyocr/
+easyocr_languages = ['en', 'ch_sim', 'ch_tra', 'ja', 'ko', 'la']
 

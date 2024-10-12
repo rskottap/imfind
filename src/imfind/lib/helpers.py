@@ -5,6 +5,16 @@ from __future__ import annotations
 __all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search']
 
 from pathlib import Path
+from functools import lru_cache
+
+@lru_cache(maxsize=1)
+def load_easyocr():
+    import easyocr
+    from imfind.config import easyocr_languages
+    # this needs to run only once to load the model into memory
+    reader = easyocr.Reader(easyocr_languages)
+    return reader
+
 
 def find_all_image_paths(directory: Path, file_types: list[str], include_hidden=False) -> list[Path]:
     """
