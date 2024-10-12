@@ -6,7 +6,7 @@ Or what you named it?
 
 Or there's just too many damn screenshots to go through all of them? 
 
-<img src="include/imfind-comic.png" alt="Comic" width="60%"/> 
+<img src="include/imfind-comic.png" alt="Comic" width="50%"/> 
 
 Been there. Too many times.
 
@@ -24,14 +24,9 @@ For GPU usage, if available, make sure CUDA is installed and setup. Follow insta
 ---
 ### Usage
 
-- See in `tests` for examples.
-TODO: Insert a screenshot of example here. 
+Do `imfind --help` to see usage. 
 
-- Do `imfind --help` to see usage.
-
-#### Demo
-
-TODO: Make demo video
+<img src="include/imfind-usage-msg.png" alt="Usage" width="80%"/> 
 
 ---
 
