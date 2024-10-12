@@ -70,5 +70,10 @@ def load_model_image_and_text_to_text():
     from transformers import AutoProcessor, LlavaForConditionalGeneration
     name = "llava-hf/llava-1.5-7b-hf"
     processor = AutoProcessor.from_pretrained(name)
-    model = LlavaForConditionalGeneration.from_pretrained(name, torch_dtype=torch.float16, low_cpu_mem_usage=True,).to(device)
+
+    # Using device_map='auto' with single GPU tends to slow it down significantly (by ~4 times)
+    if torch.cuda.is_available() and torch.cuda.device_count()>1:
+        model = LlavaForConditionalGeneration.from_pretrained(name, torch_dtype=torch.float16, low_cpu_mem_usage=True, device_map='auto')
+    else:
+        model = LlavaForConditionalGeneration.from_pretrained(name, torch_dtype=torch.float16, low_cpu_mem_usage=True,).to(device)
     return (processor, model)
