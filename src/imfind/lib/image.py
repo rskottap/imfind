@@ -44,7 +44,7 @@ def image_to_text_nocache(bytes):
     
     encoding = processor(image, return_tensors="pt").to(device)
 
-    generate_ids = model.generate(**encoding, max_new_tokens=1024)
+    generate_ids = model.generate(**encoding, max_new_tokens=1024, temperature=1.0)
     output =  processor.decode(generate_ids[0], skip_special_tokens=True)
     return output
 

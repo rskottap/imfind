@@ -9,6 +9,7 @@ __all__ = [
 
 import io
 import os
+import re
 from functools import lru_cache
 import torch
 
@@ -41,22 +42,33 @@ def image_and_text_to_text_nocache(image_bytes, text):
     file = io.BytesIO(image_bytes)
     image = PIL.Image.open(file)
 
-    template = f"USER:  \n{text}\nASSISTANT:\n"
+    # Define a chat histiry and use `apply_chat_template` to get correctly formatted prompt
+    # Each value in "content" has to be a list of dicts with types ("text", "image")
+    conversation = [
+        {
+
+        "role": "user",
+        "content": [
+            {"type": "text", "text": text},
+            {"type": "image"},
+            ],
+        },
+    ]
+
     processor, model = load_model_image_and_text_to_text()
-    encoding = processor(image, template.format(text), return_tensors="pt").to(device)
- 
-    import time
-    s = time.time()
-    generate_ids = model.generate(**encoding, max_new_tokens=1024)
-    output = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-    e = time.time()
-    print(f"Time taken for generation and decoding: {e-s} seconds")
-    return output
+    prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+    encoding = processor(images=image, text=prompt, return_tensors='pt').to(device, torch.float16)
+
+    generate_ids = model.generate(**encoding, max_new_tokens=1024, do_sample=False)
+    output = processor.decode(generate_ids[0], skip_special_tokens=True)
+
+    m = re.search("ASSISTANT:", output)
+    return output[m.end():].strip()
 
 @lru_cache(maxsize=1)
 def load_model_image_and_text_to_text():
     from transformers import AutoProcessor, LlavaForConditionalGeneration
     name = "llava-hf/llava-1.5-7b-hf"
     processor = AutoProcessor.from_pretrained(name)
-    model = LlavaForConditionalGeneration.from_pretrained(name).to(device)
+    model = LlavaForConditionalGeneration.from_pretrained(name, torch_dtype=torch.float16, low_cpu_mem_usage=True,).to(device)
     return (processor, model)
