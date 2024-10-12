@@ -35,6 +35,7 @@ def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
     """
     
     import os
+    import textwrap
     import torch
     from imfind import image_and_text_to_text, image_to_text
     from collections import defaultdict
@@ -44,11 +45,23 @@ def describe_images_and_cache(images: list[str], prompt: str) -> dict[str]:
 
     # if gpu is available, only then use the bigger LLaVa model. By default, use smaller BLIP model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    use_llava_success = True
 
     for img_path in images:
         try:
-            if device != 'cpu':
-                descriptions[img_path] = image_and_text_to_text(img_path, prompt)
+            if device != 'cpu' and use_llava_success:
+                try:
+                    descriptions[img_path] = image_and_text_to_text(img_path, prompt)
+                except Exception as e:
+                    msg = textwrap.dedent(f"""\
+                    Torch detected gpu, tried to use LLaVa1.5 for image-to-text but inference failed due to the following error:
+                    {e}
+                    {"#"*42}
+                    Using smaller but faster Salesforce/BLIP (image-captioning-large) model instead.\n""")
+                    print(msg)
+
+                    use_llava_success = False
+                    descriptions[img_path] = image_to_text(img_path)
             else:
                 descriptions[img_path] = image_to_text(img_path)
               
