@@ -12,6 +12,7 @@ import os
 import re
 from functools import lru_cache
 import torch
+import gc
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -60,7 +61,22 @@ def image_and_text_to_text_nocache(image_bytes, text):
         },
     ]
 
-    processor, model = load_model_image_and_text_to_text()
+    try:
+        processor, model = load_model_image_and_text_to_text()
+    except Exception as e:
+        from imfind import gpu_mem_avail
+
+        print(f"Total GPU memory available across all GPUs BEFORE freeing up model: {gpu_mem_avail() / 1024**3} GB.")
+        # If failed to load model into memory, free the used up GPU memory for any downstream tasks
+        del processor, model
+        # Run garbage collector to ensure all objects not referenced are deleted
+        gc.collect()
+        # Free up GPU memory cache used by PyTorch
+        torch.cuda.empty_cache()
+
+        print(f"Total GPU memory available across all GPUs AFTER freeing up model: {gpu_mem_avail() / 1024**3} GB.")
+        raise e
+
     prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
     encoding = processor(images=image, text=prompt, return_tensors='pt').to(device, torch.float16)
 

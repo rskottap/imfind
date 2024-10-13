@@ -2,10 +2,22 @@
 
 from __future__ import annotations
 
-__all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'load_easyocr']
+__all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'load_easyocr', 'gpu_mem_avail']
 
 from pathlib import Path
 from functools import lru_cache
+
+def gpu_mem_avail():
+    import torch
+
+    available_memory = None
+    if torch.cuda.is_available():
+        total_memory = torch.cuda.get_device_properties(0).total_memory
+        reserved_memory = torch.cuda.memory_reserved(0)
+        available_memory = total_memory - reserved_memory
+
+    return available_memory
+
 
 @lru_cache(maxsize=1)
 def load_easyocr():
@@ -67,9 +79,9 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
                     descriptions[k] = image_and_text_to_text(img_path, prompt)
                 except Exception as e:
                     msg = textwrap.dedent(f"""\
-                    Torch detected gpu, tried to use LLaVa1.5 for image-to-text but inference failed due to the following error:
+                    \nTorch detected gpu, tried to use LLaVa1.5 for image-to-text but inference failed due to the following error:
                     {e}
-                    {"#"*42}
+                    \n
                     Using smaller but faster Salesforce/BLIP (image-captioning-large) model instead.\n""")
                     print(msg)
 
