@@ -6,7 +6,7 @@ Or what you named it?
 
 Or there's just too many damn screenshots to go through all of them? 
 
-<img src="include/imfind-comic.png" alt="Comic" width="50%"/> 
+<img src="include/imfind-comic.png" alt="Comic" width="30%"/> 
 
 Been there. Too many times.
 
@@ -22,11 +22,35 @@ Recommended `python>=3.11`.
 For GPU usage, if available, make sure CUDA is installed and setup. Follow installation guides [here](https://docs.nvidia.com/cuda/#installation-guides). 
 
 ---
-### Usage
+### Usage 
 
-Do `imfind --help` to see usage. 
+`imfind <search string>` -- Searches in $HOME if `-d` or `--directory` not provided. This can take a while if lots of images (generation + ocr + caching). 
 
-<img src="include/imfind-usage-msg.png" alt="Usage" width="80%"/> 
+`imfind <search string> -d <directory> -n <top n>`  
+
+`imfind "beach" --directory ./include/examples/ -n 5` 
+
+Do `imfind --help` to see full usage.
+
+---
+### Examples
+
+<img src="include/imfind-savory-food.png" alt="Find food" width="50%"/> 
+<img src="include/examples/misc/food-3.png" alt="Food" width="15%"/> 
+
+
+<img src="include/imfind-raccooon-and-cars.png" alt="Find racoon and cars" width="50%"/> 
+<img src="include/examples/animal-pics/racoon.jpeg" alt="Racoon" width="15%"/> 
+<img src="include/examples/misc/misc-3.jpeg" alt="Cars" width="15%"/> 
+
+
+<img src="include/imfind-beach.png" alt="Find beach" width="50%"/> 
+<img src="include/examples/scenes/scene-4.jpeg" alt="Beach" width="15%"/> 
+
+
+<img src="include/imfind-children-playing.png" alt="Find children" width="50%"/> 
+<img src="include/examples/misc/misc-1.jpeg" alt="Children" width="20%"/> 
+
 
 ---
 
@@ -45,12 +69,12 @@ Using current SOTA models like [FlagEmbedding](https://github.com/FlagOpen/FlagE
 
 3. Finds the most similar images based on similarity between the user description and the generated image description embeddings (nothing fancy, just your simple dot products). 
 
-If no gpu is available, by default uses the BLIP image captioning model which is much smaller in size and has fast inference times even on cpu. 
+- If no gpu is available, by default uses the BLIP image captioning model which is much smaller in size and has fast inference times even on cpu. 
+- **If gpu is available and LLaVa-v1.5 model can be loaded and run, only then uses the LLava model. Else, uses BLIP on gpu. 
+LLaVa on cpu is too slow.** 
+- EasyOCR is used in both cases. 
 
-If gpu is available and LLaVa-v1.5 model can be loaded and run, only then uses the LLava model. Else, uses BLIP on gpu. 
-EasyOCR is used in both cases. 
-
-**Possible errors while running LLaVa 1.5 on GPU:**
+#### Possible errors while running LLaVa 1.5 on GPU
 - If Pytorch reserved but unallocated memory is a lot, then try `export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` 
 - Check there is enough memory on GPU (`nvidia-smi`) to be able to load the model onto it. Uses `device_map='auto'` only if multiple gpu's are available. If not multi-gpu, tries to load the entire model onto single gpu. 
 
@@ -105,9 +129,16 @@ BogoMIPS:                             4999.99
 ``` 
 
 #### EasyOCR
-- Time to load model into memory ~3 sec
-- ~500 ms - 3 sec after model loaded into memory (varies greatly based on image and contents) 
+- Automatically detects and uses gpu.
+- On 4 core cpu `Intel(R) Core(TM) i7-5500U CPU @ 2.40GHz`:
+    - ~6 sec to load model/reader
+    - ~15 sec for extracting ~413 characters
+    - ~400 ms if no text found
 
+- On above specs: **UPDATE**
+    - ~6 sec to load model/reader
+    - ~15 sec for extracting ~413 characters
+    - ~400 ms if no text found
 
 | Model        | Model Size  | Initial Model Load and Inference | Inference After Loading |
 |--------------|-------------|----------------------------------|-------------------------|
@@ -126,8 +157,10 @@ BogoMIPS:                             4999.99
 ---
 ### Notes
 
-- Be as descriptive and detailed as you can when providing a description of the image you want to search for.
-
+- If on cpu and using the BLIP model, the image-to-text generations are small and not too detailed (~15-20 words). So keep your description of what you want to search for limited to a few key words so that the embedding search can work better. Then the dot product won't be skewed by other less important words. 
+    - For example, using the prompt "white dog playing" matches a food pic and a bunny pic first due to the "white" key word. 
+    <img src="include/dog_playing_prompt_example.png" alt="Prompt diff" width="50%"/> 
+ 
 - The first time you run the command on a new directory it will take some time to download the models, generate the descriptions of all the images and embed and cache them. Any subsequent runs should be quick thanks to the awesome cacheing implementation in [embd](https://github.com/notarealdeveloper/embd) using [mmry](https://github.com/notarealdeveloper/mmry). 
 
 - If you want to clear the cache of all the text and image embeddings (for re-runs, new models, debugging etc.,) simply do `rm -rf ~/.cache/mmry`.
