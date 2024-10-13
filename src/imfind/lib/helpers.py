@@ -56,7 +56,7 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
     descriptions = defaultdict(str)
 
     # if gpu is available, only then use the bigger LLaVa model. By default, use smaller BLIP model
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     use_llava_success = True
 
     for img_path in images:

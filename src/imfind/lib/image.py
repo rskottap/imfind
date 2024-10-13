@@ -30,7 +30,7 @@ def image_to_text(image):
     text = image_to_text_nocache(bytes)
 
     reader = load_easyocr()
-    ocr_text = ' '.join(reader.readtext(image, detail=0))
+    ocr_text = ' '.join(reader.readtext(bytes, detail=0))
     text += '\n\n' + ocr_text
     cache.save_blob(bytes, text.encode())
     return text
