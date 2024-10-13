@@ -135,10 +135,10 @@ BogoMIPS:                             4999.99
     - ~15 sec for extracting ~413 characters
     - ~400 ms if no text found
 
-- On above specs: **UPDATE**
-    - ~6 sec to load model/reader
-    - ~15 sec for extracting ~413 characters
-    - ~400 ms if no text found
+- On above specs, automatically uses GPU:
+    - micro seconds to load model/reader
+    - ~700 ms - 1 sec for extracting ~413 characters
+    - ~25 ms if no text found
 
 | Model        | Model Size  | Initial Model Load and Inference | Inference After Loading |
 |--------------|-------------|----------------------------------|-------------------------|
