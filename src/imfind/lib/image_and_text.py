@@ -20,7 +20,7 @@ def image_and_text_to_text(image, text):
 
     import assure
     from mmry import Cache
-    from imfind import load_easyocr
+    from imfind import easyocr
 
     image_bytes = assure.bytes(image)
     text_bytes = text.encode()
@@ -33,8 +33,7 @@ def image_and_text_to_text(image, text):
 
     text = image_and_text_to_text_nocache(image_bytes, text)
 
-    reader = load_easyocr()
-    ocr_text = ' '.join(reader.readtext(image_bytes, detail=0))
+    ocr_text = easyocr(image_bytes)
     text += '\n\n' + ocr_text
     cache.save_blob(bytes, text)
     return text

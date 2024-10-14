@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
-__all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'load_easyocr', 'gpu_mem_avail']
+__all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'easyocr', 'gpu_mem_avail']
 
-from pathlib import Path
+import textwrap
+import torch
 from functools import lru_cache
+from pathlib import Path
 
 def gpu_mem_avail():
-    import torch
 
     available_memory = None
     if torch.cuda.is_available():
-        total_memory = torch.cuda.get_device_properties(0).total_memory
-        reserved_memory = torch.cuda.memory_reserved(0)
-        available_memory = total_memory - reserved_memory
+        available_memory = 0
+        for i in range(torch.cuda.device_count()):
+            total_memory = torch.cuda.get_device_properties(i).total_memory
+            reserved_memory = torch.cuda.memory_reserved(i)
+            available_memory += total_memory - reserved_memory
 
     return available_memory
 
@@ -23,9 +26,32 @@ def gpu_mem_avail():
 def load_easyocr():
     import easyocr
     from imfind.etc import easyocr_languages
+
     # this needs to run only once to load the model into memory
     reader = easyocr.Reader(easyocr_languages)
     return reader
+
+
+def easyocr(image):
+    """
+    image: bytes, numpy array or str path
+
+    EasyOCR has some limits, so wrap this in a try except.
+    - File extension support: png, jpg, tiff.
+    - File size limit: 2 Mb.
+    - Image dimension limit: 1500 pixel.
+    - Possible Language Code Combination: Languages sharing the same written script (e.g. latin) can be used together.
+      English can be used with any language.
+    """
+    text = ""
+    try:
+        reader = load_easyocr()
+        text = ' '.join(reader.readtext(image, detail=0))
+    except Exception as e:
+        print("Could not run EasyOCR due to the following error:")
+        print(e)
+
+    return text
 
 
 def find_all_image_paths(directory: Path, file_types: list[str], include_hidden=False) -> list[Path]:
@@ -59,8 +85,6 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
     """
     
     import os
-    import textwrap
-    import torch
     from imfind import image_and_text_to_text, image_to_text
     from collections import defaultdict
 
