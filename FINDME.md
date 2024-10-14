@@ -12,7 +12,6 @@ Been there. Too many times.
 
 So here's a simple tool to help with that.
 
-
 ---
 ### Setup
 
@@ -20,6 +19,10 @@ Install python3 if not already installed. Run `which python3` to check.
 Recommended `python>=3.11`.
 
 For GPU usage, if available, make sure CUDA is installed and setup. Follow installation guides [here](https://docs.nvidia.com/cuda/#installation-guides). 
+
+Run `pip3 install imfind` to install. 
+
+Can also clone this repo and run `make develop` to install in editable mode. 
 
 ---
 ### Usage 
@@ -30,7 +33,9 @@ For GPU usage, if available, make sure CUDA is installed and setup. Follow insta
 
 `imfind "beach" --directory ./include/examples/ -n 5` 
 
-Do `imfind --help` to see full usage.
+Do `imfind --help` to see full usage. 
+
+Run `make check` in repo root to run tests. 
 
 ---
 ### Examples
@@ -73,6 +78,8 @@ Using current SOTA models like [FlagEmbedding](https://github.com/FlagOpen/FlagE
 - **If gpu is available and LLaVa-v1.5 model can be loaded and run, only then uses the LLava model. Else, uses BLIP on gpu. 
 LLaVa on cpu is too slow.** 
 - EasyOCR is used in both cases. 
+
+⚠️ TODO: Fix LLaVa usage. Disabled LLaVa usage for now because if there is not enough GPU memory to load model, it results in errors in loading OCR and Embed models too. Pretty slow even on gpu, if on the verge of maxing out memory. In `lib/helpers.py` in `describe_images_and_cache` toggle `use_llava_success` to test.
 
 #### Possible errors while running LLaVa 1.5 on GPU
 - If Pytorch reserved but unallocated memory is a lot, then try `export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` 

@@ -93,7 +93,10 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
 
     # if gpu is available, only then use the bigger LLaVa model. By default, use smaller BLIP model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    use_llava_success = True
+
+    # Disabling for now. Too many errors if not able to load model. Still pretty slow one loaded and sometimes not enough space
+    # left to load OCR or Embed models.
+    use_llava_success = False
 
     for img_path in images:
         k = str(img_path)
@@ -102,13 +105,15 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
                 try:
                     descriptions[k] = image_and_text_to_text(img_path, prompt)
                 except Exception as e:
-                    msg = textwrap.dedent(f"""\
-                    \nTorch detected gpu, tried to use LLaVa1.5 for image-to-text but inference failed due to the following error:
-                    {e}
-                    \n
-                    Using smaller but faster Salesforce/BLIP (image-captioning-large) model instead.\n""")
-                    print(msg)
+                    msg = textwrap.dedent(f"""
+                            {'#'*80}
+                            Torch detected gpu, tried to use LLaVa1.5 for image-to-text but inference failed due to the following error:
+                            {e}
 
+                            Using smaller but faster Salesforce/BLIP (image-captioning-large) model instead.
+                            {'#'*80}
+                            """).strip()
+                    print(msg)
                     use_llava_success = False
                     descriptions[k] = image_to_text(img_path)
             else:

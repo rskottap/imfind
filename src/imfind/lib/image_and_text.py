@@ -64,7 +64,7 @@ def image_and_text_to_text_nocache(image_bytes, text):
         processor, model = load_model_image_and_text_to_text()
     except Exception as e:
         from imfind import gpu_mem_avail
-
+        # TODO: Need to debug and fix LLaVA model loading issues
         print(f"Total GPU memory available across all GPUs BEFORE freeing up model: {gpu_mem_avail() / 1024**3} GB.")
         # If failed to load model into memory, free the used up GPU memory for any downstream tasks
         del processor, model
