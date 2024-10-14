@@ -1,6 +1,6 @@
 from pathlib import Path
 import assure
-from imfind import image_to_text, image_and_text_to_text, load_easyocr, image_search
+from imfind import image_to_text, image_and_text_to_text, easyocr, image_search
 from imfind import etc
 
 def test_image_search():
@@ -28,16 +28,14 @@ def example_image_and_text_to_text():
     print(text)
 
 def test_easyocr():
-    reader = load_easyocr()
-    
     # read with image bytes
     image1 = Path("./include/examples/texts/text-1.jpeg").expanduser().resolve()
     image_bytes1 = assure.bytes(image1)
-    ocr_text1 = ' '.join(reader.readtext(image_bytes1, detail=0))
+    ocr_text1 = easyocr(image_bytes1)
 
     # read with image path as str
     image2 = "./include/examples/texts/text-2.jpeg"
-    ocr_text2 = ' '.join(reader.readtext(image2, detail=0))
+    ocr_text2 = easyocr(image2)
     
     assert "Privet Drive" in ocr_text1
     assert "Half Blood Prince" in ocr_text2
