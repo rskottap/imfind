@@ -4,10 +4,22 @@ from __future__ import annotations
 
 __all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'easyocr', 'gpu_mem_avail']
 
+import os
 import textwrap
 import torch
 from functools import lru_cache
 from pathlib import Path
+import gc
+
+line_break = '#'*80
+llava_error_msg = textwrap.dedent("""
+{}
+Torch detected gpu, tried to use LLaVa1.5 for image-to-text but inference failed due to the following error:
+{}
+
+Using smaller but faster Salesforce/BLIP (image-captioning-large) model instead.
+{}
+""").strip()
 
 def gpu_mem_avail():
 
@@ -46,12 +58,43 @@ def easyocr(image):
     text = ""
     try:
         reader = load_easyocr()
-        text = ' '.join(reader.readtext(image, detail=0))
+        text = 'Text extracted from image:\n' + ' '.join(reader.readtext(image, detail=0))
     except Exception as e:
         print("Could not run EasyOCR due to the following error:")
         print(e)
 
     return text
+
+@lru_cache(maxsize=1)
+def check_image_and_text():
+    # In a separate process try to load the LLava model and
+    # run single inference to see if model can be used successfully.
+    # Tries to use EasyOCR for both models, but doesn't fail if ocr fails for any reason.
+    """
+    If the model cannot be loaded into memory successfully and raises an exception mid-load,
+    i.e., some layers of model are loaded onto GPU but the full model cannot be loaded,
+    a CUDA OOM error is thrown but the partially loaded model is not deleted from memory.
+    And since an exception is raised before the model can be loaded, we don't have access to
+    the model variable to delete it and free up memory. Hence this hack.
+    """
+
+    import subprocess, imfind
+
+    test_path = os.path.join(imfind.__path__[0], 'lib/test_load_llava.py')
+    try:
+        _ = subprocess.run(
+            ["python3", test_path],
+            capture_output=True,
+            check=True,
+        )
+        print("WARNING: Please set environment variable IMFIND_USE_LLAVA to 'True' (in ~/.bashrc or ~/.zshrc etc.,) to avoid rechecking and save ~20 sec!\nWas able to successfully load and use LLaVa model.\n")
+        return "True"
+    except subprocess.CalledProcessError as e:
+        print(llava_error_msg.format(line_break, e.stderr, line_break))
+
+    torch.cuda.empty_cache()
+    _ = gc.collect()
+    return "False"
 
 
 def find_all_image_paths(directory: Path, file_types: list[str], include_hidden=False) -> list[Path]:
@@ -83,20 +126,15 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
         
         Note: in image_and_text_to_text the bytes cached include both the image and text bytes, so if prompt is unchanged then cache can be reused.
     """
-    
-    import os
     from imfind import image_and_text_to_text, image_to_text
     from collections import defaultdict
 
     # maps from image abs paths to their descriptions
     descriptions = defaultdict(str)
-
     # if gpu is available, only then use the bigger LLaVa model. By default, use smaller BLIP model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-    # Disabling for now. Too many errors if not able to load model. Still pretty slow one loaded and sometimes not enough space
-    # left to load OCR or Embed models.
-    use_llava_success = False
+    # If LLaVA was used successfully the first time, set this to "True" to make faster by ~20 sec
+    use_llava_success = eval(os.environ.get("IMFIND_USE_LLAVA") or check_image_and_text())
 
     for img_path in images:
         k = str(img_path)
@@ -105,16 +143,11 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
                 try:
                     descriptions[k] = image_and_text_to_text(img_path, prompt)
                 except Exception as e:
-                    msg = textwrap.dedent(f"""
-                            {'#'*80}
-                            Torch detected gpu, tried to use LLaVa1.5 for image-to-text but inference failed due to the following error:
-                            {e}
-
-                            Using smaller but faster Salesforce/BLIP (image-captioning-large) model instead.
-                            {'#'*80}
-                            """).strip()
-                    print(msg)
+                    print(llava_error_msg.format(line_break, e, line_break))
                     use_llava_success = False
+                    torch.cuda.empty_cache()
+                    _ = gc.collect()
+
                     descriptions[k] = image_to_text(img_path)
             else:
                 descriptions[k] = image_to_text(img_path)

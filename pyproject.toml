@@ -7,6 +7,7 @@ authors = [
 description = "Local AI image finder."
 dependencies = [
     "pytest",
+    "requests",
     "torch",
     "transformers",
     "accelerate>=0.26.0",

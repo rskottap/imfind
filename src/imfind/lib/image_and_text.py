@@ -34,7 +34,7 @@ def image_and_text_to_text(image, text):
     text = image_and_text_to_text_nocache(image_bytes, text)
 
     ocr_text = easyocr(image_bytes)
-    text += '\n\n' + ocr_text
+    text += '\n' + ocr_text + '\n'
     cache.save_blob(bytes, text)
     return text
 
@@ -60,27 +60,17 @@ def image_and_text_to_text_nocache(image_bytes, text):
         },
     ]
 
-    try:
-        processor, model = load_model_image_and_text_to_text()
-    except Exception as e:
-        from imfind import gpu_mem_avail
-        # TODO: Need to debug and fix LLaVA model loading issues
-        print(f"Total GPU memory available across all GPUs BEFORE freeing up model: {gpu_mem_avail() / 1024**3} GB.")
-        # If failed to load model into memory, free the used up GPU memory for any downstream tasks
-        del processor, model
-        # Run garbage collector to ensure all objects not referenced are deleted
-        gc.collect()
-        # Free up GPU memory cache used by PyTorch
-        torch.cuda.empty_cache()
-
-        print(f"Total GPU memory available across all GPUs AFTER freeing up model: {gpu_mem_avail() / 1024**3} GB.")
-        raise e
+    processor, model = load_model_image_and_text_to_text()
 
     prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
     encoding = processor(images=image, text=prompt, return_tensors='pt').to(device, torch.float16)
 
     generate_ids = model.generate(**encoding, max_new_tokens=1024, do_sample=False)
     output = processor.decode(generate_ids[0], skip_special_tokens=True)
+
+    del encoding # frees up any gpu memory taken by this
+    torch.cuda.empty_cache()
+    _ = gc.collect()
 
     m = re.search("ASSISTANT:", output)
     return output[m.end():].strip()
