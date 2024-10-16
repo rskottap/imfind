@@ -133,22 +133,23 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
     descriptions = defaultdict(str)
     # if gpu is available, only then use the bigger LLaVa model. By default, use smaller BLIP model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    # If LLaVA was used successfully the first time, set this to "True" to make faster by ~20 sec
-    use_llava_success = eval(os.environ.get("IMFIND_USE_LLAVA") or check_image_and_text())
-
+    
     for img_path in images:
         k = str(img_path)
         try:
-            if device != 'cpu' and use_llava_success:
-                try:
-                    descriptions[k] = image_and_text_to_text(img_path, prompt)
-                except Exception as e:
-                    print(llava_error_msg.format(line_break, e, line_break))
-                    use_llava_success = False
-                    torch.cuda.empty_cache()
-                    _ = gc.collect()
+            if device != 'cpu':
+                # If LLaVA was used successfully the first time, set this to "True" to make faster by ~20 sec
+                use_llava_success = eval(os.environ.get("IMFIND_USE_LLAVA") or check_image_and_text())
+                if use_llava_success:
+                    try:
+                        descriptions[k] = image_and_text_to_text(img_path, prompt)
+                    except Exception as e:
+                        print(llava_error_msg.format(line_break, e, line_break))
+                        use_llava_success = False
+                        torch.cuda.empty_cache()
+                        _ = gc.collect()
 
-                    descriptions[k] = image_to_text(img_path)
+                        descriptions[k] = image_to_text(img_path)
             else:
                 descriptions[k] = image_to_text(img_path)
               
