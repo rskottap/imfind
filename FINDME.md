@@ -19,6 +19,7 @@ Install python3 if not already installed. Run `which python3` to check.
 Recommended `python>=3.11`.
 
 For GPU usage, if available, make sure CUDA is installed and setup. Follow installation guides [here](https://docs.nvidia.com/cuda/#installation-guides). 
+**Recommended >16GB GPU memory** 
 
 To install:
 ```
