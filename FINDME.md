@@ -20,22 +20,30 @@ Recommended `python>=3.11`.
 
 For GPU usage, if available, make sure CUDA is installed and setup. Follow installation guides [here](https://docs.nvidia.com/cuda/#installation-guides). 
 
-Run `pip3 install imfind` to install. 
+To install:
+```
+pip3 install imfind
+``` 
 
 Can also clone this repo and run `make develop` to install in editable mode. 
 
 ---
 ### Usage 
 
-`imfind <search string>` -- Searches in $HOME if `-d` or `--directory` not provided. This can take a while if lots of images (generation + ocr + caching). 
+`imfind <search string>` -- Searches in $HOME by default if `-d` or `--directory` not provided. This can take a while if lots of images (generation + ocr + caching). 
 
-`imfind <search string> -d <directory> -n <top n>`  
+```
+imfind <search string> -d <directory> -n <top n>
+```  
+
+❗**If successful on GPU with LLaVA model, then `export IMFIND_USE_LLAVA="True"` to speed up by ~20 seconds!** 
+Set to "False" to disable LLaVA use and use BLIP model instead.
 
 `imfind "beach" --directory ./include/examples/ -n 5` 
 
 Do `imfind --help` to see full usage. 
 
-Run `make check` in repo root to run tests. 
+Run `make check` in repo root to run tests. See in 'tests' for example library usage.
 
 ---
 ### Examples
@@ -79,7 +87,7 @@ Using current SOTA models like [FlagEmbedding](https://github.com/FlagOpen/FlagE
 LLaVa on cpu is too slow.** 
 - EasyOCR is used in both cases. 
 
-⚠️ TODO: Fix LLaVa usage. Disabled LLaVa usage for now because if there is not enough GPU memory to load model, it results in errors in loading OCR and Embed models too. Pretty slow even on gpu, if on the verge of maxing out memory. In `lib/helpers.py` in `describe_images_and_cache` toggle `use_llava_success` to test.
+⚠️ If successful on GPU with LLaVA model, then `export IMFIND_USE_LLAVA="True"` to speed up by ~20 seconds! Set to "False" to disable LLaVA use and use BLIP model on GPU instead.
 
 #### Possible errors while running LLaVa 1.5 on GPU
 - If Pytorch reserved but unallocated memory is a lot, then try `export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` 
