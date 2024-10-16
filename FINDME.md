@@ -36,8 +36,9 @@ Can also clone this repo and run `make develop` to install in editable mode.
 imfind <search string> -d <directory> -n <top n>
 ```  
 
-❗**If successful on GPU with LLaVA model, then `export IMFIND_USE_LLAVA="True"` to speed up by ~20 seconds!** 
-Set to "False" to disable LLaVA use and use BLIP model instead.
+❗**If successful on GPU with LLaVA model after a couple of tries, then `export IMFIND_USE_LLAVA="True"` to speed up by ~20 seconds!** 
+Set to "False" to disable LLaVA use and use BLIP model instead. 
+**Try re-running if CUDA Out Of Memory error with the `embed` module.**
 
 `imfind "beach" --directory ./include/examples/ -n 5` 
 
@@ -87,11 +88,18 @@ Using current SOTA models like [FlagEmbedding](https://github.com/FlagOpen/FlagE
 LLaVa on cpu is too slow.** 
 - EasyOCR is used in both cases. 
 
-⚠️ If successful on GPU with LLaVA model, then `export IMFIND_USE_LLAVA="True"` to speed up by ~20 seconds! Set to "False" to disable LLaVA use and use BLIP model on GPU instead.
+⚠️ If successful on GPU with LLaVA model, then `export IMFIND_USE_LLAVA="True"` to speed up by ~20 seconds! Set to "False" to disable LLaVA use and use BLIP model on GPU instead. 
+
+- Try `ls ~/.cache/mmry/image_and_text_to_text/blobs | wc -l` to see how many images are cached for the big llava model. See in cache `image_to_text` for blip model. 
 
 #### Possible errors while running LLaVa 1.5 on GPU
 - If Pytorch reserved but unallocated memory is a lot, then try `export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` 
 - Check there is enough memory on GPU (`nvidia-smi`) to be able to load the model onto it. Uses `device_map='auto'` only if multiple gpu's are available. If not multi-gpu, tries to load the entire model onto single gpu. 
+- If Cuda Out of Memory error with **embed** module, for example: 
+```
+FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.cache/mmry/embed/flag/large/normalized/blobs/...
+```
+Then, just try **re-running the command** to reuse existing cache and generate cache only for previously missed images. 
 
 ---
 ### Model Inference Times
