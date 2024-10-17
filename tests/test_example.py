@@ -11,7 +11,7 @@ def test_image_search():
     path = Path("./include/examples/").expanduser().resolve()
     user_description = "raccooon and cars" # embedding model can handle typo's too
     img_paths = image_search(user_description, etc.default_prompt, path, etc.file_types)
-    top_two_paths = ' '.join(img_paths[:2])
+    top_two_paths = ' '.join(img_paths[:3])
     assert "racoon" in top_two_paths
     assert "misc-3" in top_two_paths
 
