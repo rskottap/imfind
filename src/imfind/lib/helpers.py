@@ -63,7 +63,8 @@ def easyocr(image):
     text = ""
     try:
         reader = load_easyocr()
-        text = 'Text extracted from image:\n' + ' '.join(reader.readtext(image, detail=0))
+        text = ' '.join(reader.readtext(image, detail=0))
+        if text: text = 'Text extracted from image:\n' + text
     except Exception as e:
         logging.error(f"Could not run EasyOCR due to the following error:\n{e}")
 
