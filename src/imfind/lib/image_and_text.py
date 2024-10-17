@@ -4,7 +4,7 @@
 ### https://github.com/notarealdeveloper/kern/blob/master/src/kern/image/lib/image_and_text.py 
 
 __all__ = [
-    'image_and_text_to_text',
+    'image_and_text_to_text', 'load_model_image_and_text_to_text'
 ]
 
 import gc

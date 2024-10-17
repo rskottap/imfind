@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-__all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'easyocr', 'gpu_mem_avail']
+__all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'load_easyocr', 'easyocr', 'gpu_mem_avail', 'empty_model_cache']
 
 import gc
 import logging
@@ -69,6 +69,18 @@ def easyocr(image):
         logging.error(f"Could not run EasyOCR due to the following error:\n{e}")
 
     return text
+
+
+def empty_model_cache():
+    from imfind import load_model_image_to_text, load_model_image_and_text_to_text, load_easyocr
+    logging.info(f"GPU Memory available BEFORE clearing loaded models: {gpu_mem_avail() / 1024**3} GB")
+    load_model_image_to_text.cache_clear()
+    load_model_image_and_text_to_text.cache_clear()
+    load_easyocr.cache_clear()
+    torch.cuda.empty_cache()
+    _ = gc.collect()
+    logging.info(f"GPU Memory available AFTER clearing all loaded models: {gpu_mem_avail() / 1024**3} GB")
+
 
 @lru_cache(maxsize=1)
 def check_image_and_text():
@@ -168,17 +180,17 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
                 except Exception as e:
                     logging.error(llava_error_msg.format(line_break, e, line_break))
                     use_llava_success = False
-                    torch.cuda.empty_cache()
-                    _ = gc.collect()
+                    empty_model_cache()
 
                     descriptions[k] = image_to_text(img_path)
             else:
                 descriptions[k] = image_to_text(img_path)
-              
         except Exception as e:
             descriptions[k] = img_path.name
             logging.warning(f"Could not describe image '{k}' due to the following error:\n{e}\nUsing file name for description instead.\n")
 
+    # makes space for embedding model and any downstream tasks (in cases of limited gpu memory)
+    empty_model_cache()
     return descriptions
 
 
