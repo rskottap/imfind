@@ -83,13 +83,13 @@ def easyocr(image):
 
 
 def empty_model_cache():
-    logger.info(f"GPU Memory available BEFORE clearing loaded models: {gpu_mem_avail() / 1024**3} GB")
+    #logger.info(f"GPU Memory available BEFORE clearing loaded models: {gpu_mem_avail() / 1024**3} GB")
     load_model_image_to_text.cache_clear()
     load_model_image_and_text_to_text.cache_clear()
     load_easyocr.cache_clear()
     torch.cuda.empty_cache()
     _ = gc.collect()
-    logger.info(f"GPU Memory available AFTER clearing all loaded models: {gpu_mem_avail() / 1024**3} GB")
+    #logger.info(f"GPU Memory available AFTER clearing all loaded models: {gpu_mem_avail() / 1024**3} GB")
 
 
 @lru_cache(maxsize=1)
