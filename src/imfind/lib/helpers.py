@@ -13,7 +13,7 @@ from pathlib import Path
 
 import torch
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 
 line_break = '#'*80
 llava_error_msg = textwrap.dedent("""
