@@ -87,7 +87,7 @@ The tools main goal is workflow optimization. Instead of spending say 10 min eac
 3. Finds the most similar images based on similarity between the user description and the generated image description embeddings (nothing fancy, just your simple dot products). 
 
 ⚠️ If no gpu is available, by default uses the BLIP image captioning model which is much smaller in size and has fast inference times even on cpu.
-**If gpu is available and LLaVa-v1.5 model can be loaded and run, only then uses the LLava model. Else, uses BLIP on gpu. LLaVa on cpu is too slow.**
+**If gpu is available and LLaVa-v1.5 model can be loaded and run, only then uses the LLava model**. Else, uses BLIP on gpu. LLaVa on cpu is too slow. **Set environment variable `IMFIND_USE_LLAVA="False"` to disable llava use and set to "True" to re-enable.**
 EasyOCR is tried in both cases.
 
 Try `ls ~/.cache/mmry/image_and_text_to_text/blobs | wc -l` to see how many images are cached for the big llava model. See in cache `image_to_text` for blip model.
@@ -108,7 +108,7 @@ Try `ls ~/.cache/mmry/image_and_text_to_text/blobs | wc -l` to see how many imag
 
 - If you want to clear the cache of all the text and image embeddings (for re-runs, new models, debugging etc.,) simply do `rm -rf ~/.cache/mmry`.
 
-- ⚠️ The check for whether or not LLaVa can be successfully used on device, is done **once in the very first run**. If it can be used, a file gets written in `~/.cache/imfind/` instead of users having to set/unset environment variables in different OS (works out of the box with less setup). If you want to try using LLaVa again on GPU do `rm -rf ~/.cache/imfind/`. 
+- ⚠️ The check for whether or not LLaVa can be successfully used on device, is done **once in the very first run**. If it can be used, a file gets written in `~/.cache/imfind/` instead of users having to set/unset environment variables in different OS (works out of the box with less setup). If you want to try using LLaVa again on GPU either set `IMFIND_USE_LLAVA="True"` to toggle usage, or do `rm -rf ~/.cache/imfind/` to re-check success.
 
 - Pass in the `--no-cache` option to not use existing cache and regenerate descriptions. If using as a importable library pass `use_cache=False` to disable cache and regenerate.
  

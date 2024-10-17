@@ -107,6 +107,7 @@ def check_image_and_text():
 
     import imfind
 
+    if os.environ.get("IMFIND_USE_LLAVA")=="False": return False
     try:
         # if this file exists, already checked on that device, so return True
         _ = Path(etc.imfind_use_llava_path).expanduser().resolve(strict=True)
