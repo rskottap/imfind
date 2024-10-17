@@ -2,11 +2,14 @@
 
 __all__ = ['main']
 
+import argparse
+import logging
 import os
 import sys
-import argparse
 from pathlib import Path
+
 from imfind import etc
+
 
 def parse_args(argv):
 
@@ -47,8 +50,7 @@ def main(argv=None):
             if not directory.exists():
                 raise FileNotFoundError(f"{directory}: No such file or folder exists.")
     except Exception as e:
-        print("Make sure $HOME is set (export HOME='/home/<user>') or provide an existing directory to search within.")
-        raise e
+        logging.error("Make sure $HOME is set (export HOME='/home/<user>') or provide an existing directory to search within.", exc_info=True)
     
     file_types = etc.file_types + (args.types or [])
     file_types += [e.capitalize() for e in file_types]

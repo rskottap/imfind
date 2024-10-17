@@ -4,12 +4,14 @@ from __future__ import annotations
 
 __all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'easyocr', 'gpu_mem_avail']
 
+import gc
+import logging
 import os
 import textwrap
-import torch
 from functools import lru_cache
 from pathlib import Path
-import gc
+
+import torch
 
 line_break = '#'*80
 llava_error_msg = textwrap.dedent("""
@@ -37,6 +39,7 @@ def gpu_mem_avail():
 @lru_cache(maxsize=1)
 def load_easyocr():
     import easyocr
+
     from imfind.etc import easyocr_languages
 
     # this needs to run only once to load the model into memory
@@ -78,7 +81,9 @@ def check_image_and_text():
     the model variable to delete it and free up memory. Hence this hack.
     """
 
-    import subprocess, imfind
+    import subprocess
+
+    import imfind
 
     test_path = os.path.join(imfind.__path__[0], 'lib/test_load_llava.py')
     try:
@@ -126,8 +131,9 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
         
         Note: in image_and_text_to_text the bytes cached include both the image and text bytes, so if prompt is unchanged then cache can be reused.
     """
-    from imfind import image_and_text_to_text, image_to_text
     from collections import defaultdict
+
+    from imfind import image_and_text_to_text, image_to_text
 
     # maps from image abs paths to their descriptions
     descriptions = defaultdict(str)
@@ -163,7 +169,7 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
 
 def image_search(user_img_desc: str, gen_desc_prompt: str, directory: Path, file_types: list[str], include_hidden=False, embed_size='large') -> list[str]:
 
-    from embd import Space, EmbedFlag, List
+    from embd import EmbedFlag, List, Space
     
     images = find_all_image_paths(directory, file_types, include_hidden)
     descriptions = describe_images_and_cache(images, gen_desc_prompt)

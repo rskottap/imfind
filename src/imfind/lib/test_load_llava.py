@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-import os
-import requests
 import logging
+import os
+
+import requests
+
 from imfind import image_and_text_to_text
 from imfind.etc import default_prompt
 

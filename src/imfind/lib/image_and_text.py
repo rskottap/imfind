@@ -7,12 +7,13 @@ __all__ = [
     'image_and_text_to_text',
 ]
 
+import gc
 import io
 import os
 import re
 from functools import lru_cache
+
 import torch
-import gc
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -20,6 +21,7 @@ def image_and_text_to_text(image, text):
 
     import assure
     from mmry import Cache
+
     from imfind import easyocr
 
     image_bytes = assure.bytes(image)

@@ -1,7 +1,10 @@
 from pathlib import Path
+
 import assure
-from imfind import image_to_text, image_and_text_to_text, easyocr, image_search
-from imfind import etc
+
+from imfind import (easyocr, etc, image_and_text_to_text, image_search,
+                    image_to_text)
+
 
 def test_image_search():
     # CPU/GPU usage determined within
