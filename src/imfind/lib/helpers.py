@@ -7,13 +7,26 @@ __all__=['find_all_image_paths', 'describe_images_and_cache', 'image_search', 'l
 import gc
 import logging
 import os
+import subprocess
 import textwrap
+from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
 
 import torch
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
+from imfind import etc
+
+from .image import image_to_text, load_model_image_to_text
+from .image_and_text import (image_and_text_to_text,
+                             load_model_image_and_text_to_text)
+
+logger = logging.getLogger("imfind")
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 line_break = '#'*80
 llava_error_msg = textwrap.dedent("""
@@ -42,10 +55,8 @@ def gpu_mem_avail():
 def load_easyocr():
     import easyocr
 
-    from imfind.etc import easyocr_languages
-
     # this needs to run only once to load the model into memory
-    reader = easyocr.Reader(easyocr_languages)
+    reader = easyocr.Reader(etc.easyocr_languages)
     return reader
 
 
@@ -66,20 +77,19 @@ def easyocr(image):
         text = ' '.join(reader.readtext(image, detail=0))
         if text: text = 'Text extracted from image:\n' + text
     except Exception as e:
-        logging.error(f"Could not run EasyOCR due to the following error:\n{e}")
+        logger.error(f"Could not run EasyOCR due to the following error:\n{e}")
 
     return text
 
 
 def empty_model_cache():
-    from imfind import load_model_image_to_text, load_model_image_and_text_to_text, load_easyocr
-    logging.info(f"GPU Memory available BEFORE clearing loaded models: {gpu_mem_avail() / 1024**3} GB")
+    logger.info(f"GPU Memory available BEFORE clearing loaded models: {gpu_mem_avail() / 1024**3} GB")
     load_model_image_to_text.cache_clear()
     load_model_image_and_text_to_text.cache_clear()
     load_easyocr.cache_clear()
     torch.cuda.empty_cache()
     _ = gc.collect()
-    logging.info(f"GPU Memory available AFTER clearing all loaded models: {gpu_mem_avail() / 1024**3} GB")
+    logger.info(f"GPU Memory available AFTER clearing all loaded models: {gpu_mem_avail() / 1024**3} GB")
 
 
 @lru_cache(maxsize=1)
@@ -94,17 +104,16 @@ def check_image_and_text():
     And since an exception is raised before the model can be loaded, we don't have access to
     the model variable to delete it and free up memory. Hence this hack.
     """
-    import subprocess
 
     import imfind
 
     try:
         # if this file exists, already checked on that device, so return True
-        _ = Path(imfind.etc.imfind_use_llava_path).expanduser().resolve(strict=True)
+        _ = Path(etc.imfind_use_llava_path).expanduser().resolve(strict=True)
         return True
 
     except FileNotFoundError as e:
-        logging.info(f"File {imfind.etc.imfind_use_llava_path} not found.\n\
+        logger.info(f"File {etc.imfind_use_llava_path} not found.\n\
                      Running test script to determine if llava can be loaded and used successfully.")
 
         test_path = os.path.join(imfind.__path__[0], 'lib/test_load_llava.py')
@@ -115,15 +124,15 @@ def check_image_and_text():
                 check=True,
             )
 
-            file_path = Path(imfind.etc.imfind_use_llava_path).expanduser()
+            file_path = Path(etc.imfind_use_llava_path).expanduser()
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, 'w') as file:
                 file.write("True")
-            logging.info("Was able to successfully load and use LLaVa model.\n")
+            logger.info("Was able to successfully load and use LLaVa model.\n")
             return True
 
         except subprocess.CalledProcessError as e:
-            logging.error(llava_error_msg.format(line_break, e.stderr, line_break))
+            logger.error(llava_error_msg.format(line_break, e.stderr, line_break))
 
     torch.cuda.empty_cache()
     _ = gc.collect()
@@ -159,10 +168,6 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
         
         Note: in image_and_text_to_text the bytes cached include both the image and text bytes, so if prompt is unchanged then cache can be reused.
     """
-    from collections import defaultdict
-
-    from imfind import image_and_text_to_text, image_to_text
-
     # maps from image abs paths to their descriptions
     descriptions = defaultdict(str)
     # if gpu is available, only then use the bigger LLaVa model. By default, use smaller BLIP model
@@ -178,7 +183,7 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
                 try:
                     descriptions[k] = image_and_text_to_text(img_path, prompt)
                 except Exception as e:
-                    logging.error(llava_error_msg.format(line_break, e, line_break))
+                    logger.error(llava_error_msg.format(line_break, e, line_break))
                     use_llava_success = False
                     empty_model_cache()
 
@@ -187,7 +192,7 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
                 descriptions[k] = image_to_text(img_path)
         except Exception as e:
             descriptions[k] = img_path.name
-            logging.warning(f"Could not describe image '{k}' due to the following error:\n{e}\nUsing file name for description instead.\n")
+            logger.warning(f"Could not describe image '{k}' due to the following error:\n{e}\nUsing file name for description instead.\n")
 
     # makes space for embedding model and any downstream tasks (in cases of limited gpu memory)
     empty_model_cache()
@@ -196,7 +201,7 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
 
 def image_search(user_img_desc: str, gen_desc_prompt: str, directory: Path, file_types: list[str], include_hidden=False, embed_size='large') -> list[str]:
 
-    from embd import EmbedFlag, List, Space
+    from embd import EmbedFlag, Space
     
     images = find_all_image_paths(directory, file_types, include_hidden)
     descriptions = describe_images_and_cache(images, gen_desc_prompt)
