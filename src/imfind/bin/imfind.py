@@ -11,6 +11,8 @@ from pathlib import Path
 from imfind import etc
 
 
+logging.basicConfig(level=logging.ERROR)
+
 def parse_args(argv):
 
     def check_nonneg(value):

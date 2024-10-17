@@ -13,6 +13,8 @@ from pathlib import Path
 
 import torch
 
+logging.basicConfig(level=logging.INFO)
+
 line_break = '#'*80
 llava_error_msg = textwrap.dedent("""
 {}
@@ -63,8 +65,7 @@ def easyocr(image):
         reader = load_easyocr()
         text = 'Text extracted from image:\n' + ' '.join(reader.readtext(image, detail=0))
     except Exception as e:
-        print("Could not run EasyOCR due to the following error:")
-        print(e)
+        logging.error(f"Could not run EasyOCR due to the following error:\n{e}")
 
     return text
 
@@ -92,10 +93,10 @@ def check_image_and_text():
             capture_output=True,
             check=True,
         )
-        print("WARNING: Please set environment variable IMFIND_USE_LLAVA to 'True' (in ~/.bashrc or ~/.zshrc etc.,) to avoid rechecking and save ~20 sec!\nWas able to successfully load and use LLaVa model.\n")
+        logging.info("Was able to successfully load and use LLaVa model.\n")
         return "True"
     except subprocess.CalledProcessError as e:
-        print(llava_error_msg.format(line_break, e.stderr, line_break))
+        logging.error(llava_error_msg.format(line_break, e.stderr, line_break))
 
     torch.cuda.empty_cache()
     _ = gc.collect()
@@ -150,7 +151,7 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
                     try:
                         descriptions[k] = image_and_text_to_text(img_path, prompt)
                     except Exception as e:
-                        print(llava_error_msg.format(line_break, e, line_break))
+                        logging.error(llava_error_msg.format(line_break, e, line_break))
                         use_llava_success = False
                         torch.cuda.empty_cache()
                         _ = gc.collect()
@@ -161,8 +162,7 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
               
         except Exception as e:
             descriptions[k] = img_path.name
-            print(f"Could not describe image '{k}'. Using file name for description instead.")
-            print(e)
+            logging.warning(f"Could not describe image '{k}' due to the following error:\n{e}\nUsing file name for description instead.\n")
 
     return descriptions
 
