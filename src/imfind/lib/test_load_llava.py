@@ -12,5 +12,4 @@ from imfind.etc import default_prompt
  
 url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/transformers/tasks/ai2d-demo.jpg"
 image = requests.get(url, stream=True).raw
-os.environ["USE_MMRY_CACHE"] = "False"
-description = image_and_text_to_text(image, default_prompt)
+description = image_and_text_to_text(image, default_prompt, use_cache=False)

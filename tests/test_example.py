@@ -17,8 +17,8 @@ def test_image_search():
 
 
 def test_image_to_text():
-    text = image_to_text("./include/examples/animal-pics/puppy-pic-1.jpeg")
-    text2 = image_to_text("./include/examples/misc/food-1.png")
+    text = image_to_text("./include/examples/animal-pics/puppy-pic-1.jpeg", use_cache=False)
+    text2 = image_to_text("./include/examples/misc/food-1.png", use_cache=False)
     assert "puppies" in text
     assert "pancakes" in text2
 
@@ -27,7 +27,7 @@ def example_image_and_text_to_text():
     """ Example usage of LLaVa model which also takes additional generation prompt as input.
         Only recommended to run on GPU, extremely slow on CPU due to large model """
     
-    text = image_and_text_to_text("./include/examples/animal-pics/puppy-pic-1.jpeg", etc.default_prompt)
+    text = image_and_text_to_text("./include/examples/animal-pics/puppy-pic-1.jpeg", etc.default_prompt, use_cache=False)
     print(text)
 
 def test_easyocr():

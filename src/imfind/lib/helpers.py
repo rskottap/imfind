@@ -161,7 +161,7 @@ def find_all_image_paths(directory: Path, file_types: list[str], include_hidden=
     return image_paths
     
 
-def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
+def describe_images_and_cache(images: list[Path], prompt: str, use_cache=True) -> dict[str]:
     """
         images: List of paths to image files
         prompt: prompt used to generate descriptions
@@ -181,15 +181,15 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
         try:
             if device != 'cpu' and use_llava_success:
                 try:
-                    descriptions[k] = image_and_text_to_text(img_path, prompt)
+                    descriptions[k] = image_and_text_to_text(img_path, prompt, use_cache)
                 except Exception as e:
                     logger.error(llava_error_msg.format(line_break, e, line_break))
                     use_llava_success = False
                     empty_model_cache()
 
-                    descriptions[k] = image_to_text(img_path)
+                    descriptions[k] = image_to_text(img_path, use_cache)
             else:
-                descriptions[k] = image_to_text(img_path)
+                descriptions[k] = image_to_text(img_path, use_cache)
         except Exception as e:
             descriptions[k] = img_path.name
             logger.warning(f"Could not describe image '{k}' due to the following error:\n{e}\nUsing file name for description instead.\n")
@@ -199,12 +199,12 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
     return descriptions
 
 
-def image_search(user_img_desc: str, gen_desc_prompt: str, directory: Path, file_types: list[str], include_hidden=False, embed_size='large') -> list[str]:
+def image_search(user_img_desc: str, gen_desc_prompt: str, directory: Path, file_types: list[str], use_cache=True, include_hidden=False, embed_size='large') -> list[str]:
 
     from embd import EmbedFlag, Space
     
     images = find_all_image_paths(directory, file_types, include_hidden)
-    descriptions = describe_images_and_cache(images, gen_desc_prompt)
+    descriptions = describe_images_and_cache(images, gen_desc_prompt, use_cache)
     space = Space(EmbedFlag(embed_size))
     
     user_desc_embed = space.think(user_img_desc)

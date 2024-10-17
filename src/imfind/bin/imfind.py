@@ -56,17 +56,14 @@ def main(argv=None):
     thres = args.threshold
     final_prompt = etc.default_prompt + (args.prompt or '').strip()
 
-    os.environ["USE_MMRY_CACHE"] = "False" if args.no_cache else "True"
+    use_cache = False if args.no_cache else True
     include_hidden = bool(args.include_hidden)
 
     # do the image search
     from imfind import image_search
 
     top = image_search(user_img_desc=description, gen_desc_prompt=final_prompt, 
-                       directory=directory, file_types=file_types, include_hidden=include_hidden)
-
-    # delete variable
-    __ = os.environ.pop("USE_MMRY_CACHE")
+                       directory=directory, file_types=file_types, use_cache=use_cache, include_hidden=include_hidden)
 
     if thres:
         print('\n'.join(top[:thres]))

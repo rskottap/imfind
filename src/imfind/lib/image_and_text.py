@@ -17,7 +17,7 @@ import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def image_and_text_to_text(image, text):
+def image_and_text_to_text(image, text, use_cache=True):
 
     import assure
     from mmry import Cache
@@ -29,8 +29,7 @@ def image_and_text_to_text(image, text):
     bytes = image_bytes + text_bytes
 
     cache = Cache('image_and_text_to_text')
-    use_cache = os.environ.get("USE_MMRY_CACHE") # if not set, by default is True, so uses the cache
-    if eval(use_cache or "True") and cache.have_blob(bytes):
+    if use_cache and cache.have_blob(bytes):
         return cache.load_blob(bytes).decode()
 
     text = image_and_text_to_text_nocache(image_bytes, text)
