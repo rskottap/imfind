@@ -10,3 +10,4 @@ file_types = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'heic']
 # See here for full available list https://www.jaided.ai/easyocr/
 easyocr_languages = ['en', 'ch_tra']
 
+imfind_use_llava_path = '~/.cache/imfind/use_llava.txt'

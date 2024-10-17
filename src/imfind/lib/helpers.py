@@ -81,26 +81,40 @@ def check_image_and_text():
     And since an exception is raised before the model can be loaded, we don't have access to
     the model variable to delete it and free up memory. Hence this hack.
     """
-
     import subprocess
 
     import imfind
 
-    test_path = os.path.join(imfind.__path__[0], 'lib/test_load_llava.py')
     try:
-        _ = subprocess.run(
-            ["python3", test_path],
-            capture_output=True,
-            check=True,
-        )
-        logging.info("Was able to successfully load and use LLaVa model.\n")
-        return "True"
-    except subprocess.CalledProcessError as e:
-        logging.error(llava_error_msg.format(line_break, e.stderr, line_break))
+        # if this file exists, already checked on that device, so return True
+        _ = Path(imfind.etc.imfind_use_llava_path).expanduser().resolve(strict=True)
+        return True
+
+    except FileNotFoundError as e:
+        logging.info(f"File {imfind.etc.imfind_use_llava_path} not found.\n\
+                     Running test script to determine if llava can be loaded and used successfully.")
+
+        test_path = os.path.join(imfind.__path__[0], 'lib/test_load_llava.py')
+        try:
+            _ = subprocess.run(
+                ["python3", test_path],
+                capture_output=True,
+                check=True,
+            )
+
+            file_path = Path(imfind.etc.imfind_use_llava_path).expanduser()
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, 'w') as file:
+                file.write("True")
+            logging.info("Was able to successfully load and use LLaVa model.\n")
+            return True
+
+        except subprocess.CalledProcessError as e:
+            logging.error(llava_error_msg.format(line_break, e.stderr, line_break))
 
     torch.cuda.empty_cache()
     _ = gc.collect()
-    return "False"
+    return False
 
 
 def find_all_image_paths(directory: Path, file_types: list[str], include_hidden=False) -> list[Path]:
@@ -141,22 +155,22 @@ def describe_images_and_cache(images: list[Path], prompt: str) -> dict[str]:
     # if gpu is available, only then use the bigger LLaVa model. By default, use smaller BLIP model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
+    use_llava_success = False
+    if device != 'cpu': use_llava_success = check_image_and_text()
+
     for img_path in images:
         k = str(img_path)
         try:
-            if device != 'cpu':
-                # If LLaVA was used successfully the first time, set this to "True" to make faster by ~20 sec
-                use_llava_success = eval(os.environ.get("IMFIND_USE_LLAVA") or check_image_and_text())
-                if use_llava_success:
-                    try:
-                        descriptions[k] = image_and_text_to_text(img_path, prompt)
-                    except Exception as e:
-                        logging.error(llava_error_msg.format(line_break, e, line_break))
-                        use_llava_success = False
-                        torch.cuda.empty_cache()
-                        _ = gc.collect()
+            if device != 'cpu' and use_llava_success:
+                try:
+                    descriptions[k] = image_and_text_to_text(img_path, prompt)
+                except Exception as e:
+                    logging.error(llava_error_msg.format(line_break, e, line_break))
+                    use_llava_success = False
+                    torch.cuda.empty_cache()
+                    _ = gc.collect()
 
-                        descriptions[k] = image_to_text(img_path)
+                    descriptions[k] = image_to_text(img_path)
             else:
                 descriptions[k] = image_to_text(img_path)
               
