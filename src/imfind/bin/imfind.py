@@ -3,15 +3,12 @@
 __all__ = ['main']
 
 import argparse
-import logging
 import os
 import sys
 from pathlib import Path
 
 from imfind import etc
 
-
-logging.basicConfig(level=logging.ERROR, format="%(levelname)s - %(message)s")
 
 def parse_args(argv):
 
@@ -50,7 +47,6 @@ def main(argv=None):
         else:
             directory = Path(args.directory.strip()).expanduser().resolve(strict=True)
     except Exception as e:
-        logging.error("Make sure $HOME is set (export HOME='/home/<user>') or provide an existing directory to search within.\n")
         raise e
     
     file_types = etc.file_types + (args.types or [])
