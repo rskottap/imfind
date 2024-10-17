@@ -46,11 +46,9 @@ def main(argv=None):
     directory = ''
     try:
         if not args.directory:
-            directory = Path(os.environ["HOME"]).expanduser().resolve() # make it home directory 
+            directory = Path(os.environ["HOME"]).expanduser().resolve(strict=True) # make it home directory
         else:
-            directory = Path(args.directory.strip()).expanduser().resolve()
-            if not directory.exists():
-                raise FileNotFoundError(f"{directory}: No such file or folder exists.")
+            directory = Path(args.directory.strip()).expanduser().resolve(strict=True)
     except Exception as e:
         logging.error("Make sure $HOME is set (export HOME='/home/<user>') or provide an existing directory to search within.", exc_info=True)
     
