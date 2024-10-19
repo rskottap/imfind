@@ -133,7 +133,7 @@ def check_image_and_text():
             return True
 
         except subprocess.CalledProcessError as e:
-            logger.error(llava_error_msg.format(line_break, e.stderr, line_break))
+            logger.error(llava_error_msg.format(line_break, e.stderr, line_break), exc_info=True)
 
     torch.cuda.empty_cache()
     _ = gc.collect()
@@ -184,7 +184,7 @@ def describe_images_and_cache(images: list[Path], prompt: str, use_cache=True) -
                 try:
                     descriptions[k] = image_and_text_to_text(img_path, prompt, use_cache)
                 except Exception as e:
-                    logger.error(llava_error_msg.format(line_break, e, line_break))
+                    logger.error(llava_error_msg.format(line_break, e, line_break), exc_info=True)
                     use_llava_success = False
                     empty_model_cache()
 
@@ -193,7 +193,7 @@ def describe_images_and_cache(images: list[Path], prompt: str, use_cache=True) -
                 descriptions[k] = image_to_text(img_path, use_cache)
         except Exception as e:
             descriptions[k] = img_path.name
-            logger.warning(f"Could not describe image '{k}' due to the following error:\n{e}\nUsing file name for description instead.\n")
+            logger.error(f"Could not describe image '{k}' due to the following error:\n{e}\nUsing file name for description instead.\n", exc_info=True)
 
     # makes space for embedding model and any downstream tasks (in cases of limited gpu memory)
     empty_model_cache()
