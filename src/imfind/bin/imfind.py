@@ -5,6 +5,7 @@ __all__ = ['main']
 import argparse
 import os
 import sys
+import platform
 from pathlib import Path
 
 from imfind import etc
@@ -43,7 +44,9 @@ def main(argv=None):
     directory = ''
     try:
         if not args.directory:
-            directory = Path(os.environ["HOME"]).expanduser().resolve(strict=True) # make it home directory
+            HOME = "HOME"
+            if platform.system() == "Windows": HOME = "USERPROFILE"
+            directory = Path(os.environ[HOME]).expanduser().resolve(strict=True) # make it home directory
         else:
             directory = Path(args.directory.strip()).expanduser().resolve(strict=True)
     except Exception as e:
