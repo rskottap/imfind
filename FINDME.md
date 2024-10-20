@@ -15,8 +15,8 @@ So here's a simple tool to help with that.
 ---
 ### Setup
 
-Install python3 if not already installed. Run `which python3` to check.
-**Recommended python>=3.11**
+Install python3 if not already installed. Run `which python3` and `python3 --version` to check.
+**Recommended python>=3.9**
 
 For GPU usage, if available, make sure CUDA is installed and setup. Follow installation guides [here](https://docs.nvidia.com/cuda/#installation-guides). 
 **Recommended >16GB GPU memory** 
@@ -26,20 +26,25 @@ To install:
 pip3 install imfind
 ``` 
 
+If previously installed, to upgrade to latest version of imfind and update all dependant packages (without using pip's existing cache directory), do:
+```
+pip install --upgrade --upgrade-strategy eager --no-cache-dir imfind
+``` 
+
 Can also clone this repo and run 'make develop' to install in editable mode.
 
 ---
 ### Usage 
 
 ```
-imfind <search string> -d <directory> -n <top n>
+imfind <search string> -d <directory>
 ```  
 
 ```
 imfind "beach" --directory ./include/examples/ -n 5
 ```
 
-`imfind <search string>` -- Searches in $HOME by default if `-d` or `--directory` not provided. This can take a while if there are lots of images (generation + ocr + caching). Can do first run in the background/overnight.
+`imfind <search string>` -- Searches in **users home directory by default** if `-d` or `--directory` not provided and returns the **top 10** images. This can take a while if there are lots of images (generation + ocr + caching). Recommended to do first run in the background/overnight.
 
 Do `imfind --help` to see full usage. 
 
