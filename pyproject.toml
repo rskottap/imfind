@@ -9,6 +9,7 @@ dependencies = [
     "pytest",
     "requests",
     "torch",
+    "numpy<2.0",
     "transformers",
     "accelerate>=0.26.0",
     "easyocr",
